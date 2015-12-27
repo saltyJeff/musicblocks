@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            body {
+                background-color: white;
+                height: 400px;
+                margin: 0px;
+                
+            }
+            #keyboard {
+                height: 400px;
+                overflow-x: scroll;
+                overflow-y: hidden;
+                white-space: nowrap;
+                border: 1px solid black;
+                text-align: center;
+                cursor: pointer;
+                position: relative;
+            }
+            table {
+                table-layout:fixed;
+            }
+            table.white {
+                position: absolute;
+                top: 0px;
+                left: 0px;
+                height: 300px;
+                border-spacing: 0px 0px;
+            }
+            table.black {
+                position: absolute;
+                border-collapse: separate;
+                border-spacing: 20px 0px;
+                height: 150px;
+                top: 0px;
+                left: 30px;
+            }
+            table.white > tbody > tr {
+                position: relative;
+            }
+            table.white > tbody > tr > td {
+                min-width: 80px;
+                width: 80px;
+                max-width: 80px;
+                height: 100%;
+                vertical-align: bottom;
+                border: 1px solid black;
+            }
+            table.white > tbody > tr > td:hover {
+                background-color: pink;
+            }
+            table.black > tbody > tr > td {
+                min-width: 60px;
+                width: 60px;
+                max-width: 60px;
+                height: 100%;
+                vertical-align: bottom;
+                border: 1px solid white;
+                background-color: black;
+                color: white;
+                z-index: 100;
+            }
+            table.black > tbody > tr > td:hover {
+                background-color: pink;
+            }
+        </style>
+        
+    </head>
+    <body>
+        <span>Starting Note</span>
+        <select id="firstNote" onchange="changeKeys()">
+            <option value="C">C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+            <option value="A" selected>A</option>
+            <option value="B">B</option>
+        </select>
+        <input type="number" min="0" max="7" step="1" id="firstOctave" onchange="changeKeys()" value="0"/>
+        <select id="secondNote" onchange="changeKeys()">
+            <option value="C" selected>C</option>
+            <option value="D">D</option>
+            <option value="E">E</option>
+            <option value="F">F</option>
+            <option value="G">G</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+        </select>
+        <input type="number" min="2" max="8" step="1" id="secondOctave" onchange="changeKeys()" value="7"/><br>
+        <!--Actual Keyboard-->
+        <div id="keyboard">
+            
+            <table class="white">
+                <tr id="white">
+                     
+                </tr>
+            </table>
+            <table class="black">
+                <tr id="black">
+                        
+                </tr>
+            </table>
+        </div>
+        <script>
+            //elements
+            var keyboard = document.getElementById("keyboard");
+            var firstOctave = document.getElementById("firstOctave");
+            var firstNote = document.getElementById("firstNote");
+            var secondOctave = document.getElementById("secondOctave");
+            var secondNote = document.getElementById("secondNote");
+            var whiteKeys = document.getElementById("white");
+            var blackKeys = document.getElementById("black");
+            
+            var whiteNoteEnums = ['C','D','E','F','G','A','B'];
+            var blackNoteEnums = ['C#', 'D#', 'SKIP', 'F#', 'G#', 'A#', 'SKIP'];
+            
+            changeKeys();
+            
+            function changeKeys() {
+                whiteKeys.innerHTML = "";
+                blackKeys.innerHTML = "";
+                var note1 = firstNote.value;
+                var note2 = secondNote.value;
+                var oct1 = firstOctave.value;
+                var oct2 = secondOctave.value;
+                if(note1 == "" || note2 == "" || oct1 == "" || oct2 == "") {
+                    return;
+                }
+                
+                for(var j = whiteNoteEnums.indexOf(note1); j < whiteNoteEnums.length; j++) {
+                    whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct1+"</td>";
+                }
+                for(var j = whiteNoteEnums.indexOf(note1); j < blackNoteEnums.length; j++) {
+                    if(blackNoteEnums[j] != 'SKIP') {
+                        blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+oct1+"</td>";
+                    }
+                    else {
+                        blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+                    }
+                }
+                for(var i = parseInt(oct1)+1; i <= oct2-1; i++) {
+                    for(var j = 0; j < whiteNoteEnums.length; j++) {
+                        whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+i+"</td>";
+                    }
+                    for(var j = 0; j < blackNoteEnums.length; j++) {
+                        if(blackNoteEnums[j] != 'SKIP') {
+                            blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+i+"</td>";
+                        }
+                        else {
+                            blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+                        }
+                    }
+                }
+                for(var j = 0; j < whiteNoteEnums.indexOf(note2)+1; j++) {
+                    whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct2+"</td>";
+                }
+                for(var j = 0; j < whiteNoteEnums.indexOf(note2); j++) {
+                    if(blackNoteEnums[j] != 'SKIP') {
+                        blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+oct2+"</td>";
+                    }
+                    else {
+                        blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+                    }
+                }
+                console.log(note1+oct1+"-"+note2+oct2);
+            }
+            
+            keyboard.addEventListener("click", function (e) {
+                if(e.target.tagName == "TD") {
+                    var str = e.target.textContent;
+                    var key = str.substring(0,str.length-1);
+                    var thisOctave = str[str.length-1];
+                    console.log(key+" "+thisOctave);
+                    
+                    document.body.handler(key, thisOctave);
+                }
+            });
+        </script>
+    </body>
+</html>
