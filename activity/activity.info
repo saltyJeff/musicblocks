@@ -1,6 +1,0 @@
-[Activity]
-name = Mouse Music
-activity_version = 1
-bundle_id = org.sugarlabs.MusicBlocks
-exec = null
-icon = activity-icon
