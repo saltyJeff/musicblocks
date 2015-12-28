@@ -70,6 +70,7 @@
             <option value="A" selected>A</option>
             <option value="B">B</option>
         </select>
+        <span>Ending Note</span>
         <input type="number" min="0" max="7" step="1" id="firstOctave" onchange="changeKeys()" value="0"/>
         <select id="secondNote" onchange="changeKeys()">
             <option value="C" selected>C</option>
@@ -122,9 +123,29 @@
                 var note2 = secondNote.value;
                 var oct1 = firstOctave.value;
                 var oct2 = secondOctave.value;
+                //sanity checks
+                //missing values
                 if(note1 == "" || note2 == "" || oct1 == "" || oct2 == "") {
                     return;
                 }
+                //2nd octave < 1st octave
+                if(oct2 < oct1) {
+                    var tmp = oct1;
+                    oct1 = oct2;
+                    oct2 = tmp;
+                }
+                //2nd key comes before 1st key on same octave
+                if(oct1 == oct2 && whiteNoteEnums.indexOf(note1) > whiteNoteEnums.indexOf(note2)) {
+                    var tmp = note1;
+                    note1 = note2;
+                    note2 = tmp;
+                }
+                //reflect sanity changes
+                firstNote.value = note1;
+                secondNote.value = note2;
+                firstOctave.value = oct1;
+                secondOctave.value = oct2;
+                
                 //first key -> end of first octave
                 for(var j = whiteNoteEnums.indexOf(note1); j < whiteNoteEnums.length; j++) {
                     whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct1+"</td>";
