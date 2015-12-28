@@ -8,17 +8,151 @@
 // You should have received a copy of the GNU Affero General Public
 // License along with this library; if not, write to the Free Software
 // Foundation, 51 Franklin Street, Suite 500 Boston, MA 02110-1335 USA
+
+//elements
+var keyboard = document.getElementById("keyboard");
+var keyboardHolder = document.getElementById("keyboardHolder");
+var firstOctave = document.getElementById("firstOctave");
+var firstNote = document.getElementById("firstNote");
+var secondOctave = document.getElementById("secondOctave");
+var secondNote = document.getElementById("secondNote");
+var whiteKeys = document.getElementById("white");
+var blackKeys = document.getElementById("black");
+
+var whiteNoteEnums = ['C','D','E','F','G','A','B'];
+var blackNoteEnums = ['C♯', 'D♯', 'SKIP', 'F♯', 'G♯', 'A♯', 'SKIP'];
+
+var selected = [];
+
+//configure defaults
+changeKeys();
+
+function changeKeys() {
+    whiteKeys.innerHTML = "";
+    blackKeys.innerHTML = "";
+    var note1 = firstNote.value;
+    var note2 = secondNote.value;
+    var oct1 = firstOctave.value;
+    var oct2 = secondOctave.value;
+    //sanity checks
+    //missing values
+    if(note1 == "" || note2 == "" || oct1 == "" || oct2 == "") {
+        return;
+    }
+    //2nd octave < 1st octave
+    if(oct2 < oct1) {
+        var tmp = oct1;
+        oct1 = oct2;
+        oct2 = tmp;
+    }
+    //2nd key comes before 1st key on same octave
+    if(oct1 == oct2 && whiteNoteEnums.indexOf(note1) > whiteNoteEnums.indexOf(note2)) {
+        var tmp = note1;
+        note1 = note2;
+        note2 = tmp;
+    }
+    //reflect sanity changes
+    firstNote.value = note1;
+    secondNote.value = note2;
+    firstOctave.value = oct1;
+    secondOctave.value = oct2;
+    
+    //first key -> end of first octave
+    for(var j = whiteNoteEnums.indexOf(note1); j < whiteNoteEnums.length; j++) {
+        whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct1+"</td>";
+    }
+    for(var j = whiteNoteEnums.indexOf(note1); j < blackNoteEnums.length; j++) {
+        if(blackNoteEnums[j] != 'SKIP') {
+            blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+oct1+"</td>";
+        }
+        else {
+            blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+        }
+    }
+    //2nd octave -> second to last octave
+    for(var i = parseInt(oct1)+1; i <= oct2-1; i++) {
+        for(var j = 0; j < whiteNoteEnums.length; j++) {
+            whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+i+"</td>";
+        }
+        for(var j = 0; j < blackNoteEnums.length; j++) {
+            if(blackNoteEnums[j] != 'SKIP') {
+                blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+i+"</td>";
+            }
+            else {
+            blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+            }
+        }
+    }
+    //last octave -> last key
+    for(var j = 0; j < whiteNoteEnums.indexOf(note2)+1; j++) {
+        whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct2+"</td>";
+    }
+    for(var j = 0; j < whiteNoteEnums.indexOf(note2); j++) {
+        if(blackNoteEnums[j] != 'SKIP') {
+            blackKeys.innerHTML += "<td>"+blackNoteEnums[j]+oct2+"</td>";
+        }
+        else {
+            blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
+        }
+    }
+    //assign the IDs (for clearing)
+    for(var i = 0; i < whiteKeys.children.length; i++) {
+        whiteKeys.children[i].id = whiteKeys.children[i].textContent;
+    }
+    for(var i = 0; i < blackKeys.children.length; i++) {
+        blackKeys.children[i].id = blackKeys.children[i].textContent;
+    }
+    console.log(note1+oct1+"-"+note2+oct2);
+}
+
+keyboard.addEventListener("click", function (e) {
+    var target = e.target;
+    if(target.tagName == "TD") {
+        if((target.style.backgroundColor != "lightblue") && (target.style.backgroundColor != "pink")) {
+            selected.push(target.textContent);
+            if(target.parentNode == whiteKeys) {
+                target.style.backgroundColor = "lightblue";
+            }
+            else {
+                target.style.backgroundColor = "pink";
+            }
+        }
+        else if(target.style.backgroundColor == "lightblue" || target.style.backgroundColor == "pink")  {
+            selected.splice(selected.indexOf(target.textContent), 1);
+            if(target.parentNode == whiteKeys) {
+                target.style.backgroundColor = "white";
+            }
+            else {
+                target.style.backgroundColor = "black";
+            }
+        }
+        handleKeyboard(target.textContent);
+    }
+});
+
+function deselect () {
+    for(var i = 0; i < selected.length; i++) {
+        var tmp = document.getElementById(selected[i]);
+        if (tmp.parentElement == whiteKeys) {
+            tmp.style.backgroundColor = "white";
+        }
+        else {
+            tmp.style.backgroundColor = "black";
+        }
+    }
+    selected = [];
+}
 var keyboardShown = true;
 
 function toggleKeyboard() {
- if(keyboardShown) {
-  keyboard.style.display = 'none';
- }
- else {
-  keyboard.style.display = 'inline';
- }
+    if(keyboardShown) {
+        keyboardHolder.style.display = 'none';
+    }
+    else {
+        keyboardHolder.style.display = 'inline';
+    }
  
- keyboardShown = !keyboardShown;
+    keyboardShown = !keyboardShown;
 }
  
 function handleKeyboard (key) {
@@ -80,14 +214,3 @@ function handleKeyboard (key) {
  //not sure if there's a synth already in the program
  var synth = new Tone.SimpleSynth().toMaster();
  
- function setupKeyboard () {
-    var keyboard = document.getElementById("keyboard");
-    var keyboardDoc = (keyboard.contentWindow || keyboard.contentDocument);
-    if (keyboardDoc.document) {
-        keyboardDoc = keyboardDoc.document;
-    }
-    
-    //sets the callbacks for keypress on the keyboard
-    keyboardDoc.body.keyHandle = window.handleKeyboard;
-    keyboardDoc.body.pitchHandle = window.handleKeyboardPitches;
-}
