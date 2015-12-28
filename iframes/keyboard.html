@@ -4,12 +4,10 @@
         <style>
             body {
                 background-color: white;
-                height: 400px;
                 margin: 0px;
-                
             }
             #keyboard {
-                height: 400px;
+                height: 325px;
                 overflow-x: scroll;
                 overflow-y: hidden;
                 white-space: nowrap;
@@ -47,9 +45,6 @@
                 vertical-align: bottom;
                 border: 1px solid black;
             }
-            table.white > tbody > tr > td:hover {
-                background-color: pink;
-            }
             table.black > tbody > tr > td {
                 min-width: 60px;
                 width: 60px;
@@ -60,9 +55,6 @@
                 background-color: black;
                 color: white;
                 z-index: 100;
-            }
-            table.black > tbody > tr > td:hover {
-                background-color: pink;
             }
         </style>
         
@@ -88,7 +80,9 @@
             <option value="A">A</option>
             <option value="B">B</option>
         </select>
-        <input type="number" min="2" max="8" step="1" id="secondOctave" onchange="changeKeys()" value="7"/><br>
+        <input type="number" min="2" max="8" step="1" id="secondOctave" onchange="changeKeys()" value="7"/>
+        <input type="button" value="Deselect all notes" onclick="deselect();" />
+        <input type="button" value="Generate Pitch Blocks!" onclick="document.body.pitchHandle(selected); deselect();" /><br>
         <!--Actual Keyboard-->
         <div id="keyboard">
             
@@ -114,8 +108,11 @@
             var blackKeys = document.getElementById("black");
             
             var whiteNoteEnums = ['C','D','E','F','G','A','B'];
-            var blackNoteEnums = ['C#', 'D#', 'SKIP', 'F#', 'G#', 'A#', 'SKIP'];
+            var blackNoteEnums = ['C♯', 'D♯', 'SKIP', 'F♯', 'G♯', 'A♯', 'SKIP'];
             
+            var selected = [];
+            
+            //configure defaults
             changeKeys();
             
             function changeKeys() {
@@ -128,7 +125,7 @@
                 if(note1 == "" || note2 == "" || oct1 == "" || oct2 == "") {
                     return;
                 }
-                
+                //first key -> end of first octave
                 for(var j = whiteNoteEnums.indexOf(note1); j < whiteNoteEnums.length; j++) {
                     whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct1+"</td>";
                 }
@@ -140,6 +137,7 @@
                         blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
                     }
                 }
+                //2nd octave -> second to last octave
                 for(var i = parseInt(oct1)+1; i <= oct2-1; i++) {
                     for(var j = 0; j < whiteNoteEnums.length; j++) {
                         whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+i+"</td>";
@@ -153,6 +151,7 @@
                         }
                     }
                 }
+                //last octave -> last key
                 for(var j = 0; j < whiteNoteEnums.indexOf(note2)+1; j++) {
                     whiteKeys.innerHTML += "<td>"+whiteNoteEnums[j]+oct2+"</td>";
                 }
@@ -164,19 +163,54 @@
                         blackKeys.innerHTML += "<td style='visibility: hidden'></td>";
                     }
                 }
+                
+                //assign the IDs (for clearing)
+                for(var i = 0; i < whiteKeys.children.length; i++) {
+                    whiteKeys.children[i].id = whiteKeys.children[i].textContent;
+                }
+                for(var i = 0; i < blackKeys.children.length; i++) {
+                    blackKeys.children[i].id = blackKeys.children[i].textContent;
+                }
                 console.log(note1+oct1+"-"+note2+oct2);
             }
             
             keyboard.addEventListener("click", function (e) {
-                if(e.target.tagName == "TD") {
-                    var str = e.target.textContent;
-                    var key = str.substring(0,str.length-1);
-                    var thisOctave = str[str.length-1];
-                    console.log(key+" "+thisOctave);
-                    
-                    document.body.handler(key, thisOctave);
+                var target = e.target;
+                if(target.tagName == "TD") {
+                    if((target.style.backgroundColor != "lightblue") && (target.style.backgroundColor != "pink")) {
+                        selected.push(target.textContent);
+                        if(target.parentNode == whiteKeys) {
+                            target.style.backgroundColor = "lightblue";
+                        }
+                        else {
+                            target.style.backgroundColor = "pink";
+                        }
+                    }
+                    else if(target.style.backgroundColor == "lightblue" || target.style.backgroundColor == "pink")  {
+                        selected.splice(selected.indexOf(target.textContent), 1);
+                        if(target.parentNode == whiteKeys) {
+                            target.style.backgroundColor = "white";
+                        }
+                        else {
+                            target.style.backgroundColor = "black";
+                        }
+                    }
+                    document.body.keyHandle(target.textContent);
                 }
             });
+            
+            function deselect () {
+                for(var i = 0; i < selected.length; i++) {
+                    var tmp = document.getElementById(selected[i]);
+                    if (tmp.parentElement == whiteKeys) {
+                        tmp.style.backgroundColor = "white";
+                    }
+                    else {
+                        tmp.style.backgroundColor = "black";
+                    }
+                }
+                selected = [];
+            }
         </script>
     </body>
 </html>
