@@ -42,7 +42,7 @@ function handleKeyboard (key) {
             newStack[endOfStackIdx][4][n - 1] = idx;
         }
         var endOfStackIdx = idx;
-        newStack.push([idx + 1, ['number', {'value': "1"}], 0, 0, [idx]]);
+        newStack.push([idx + 1, ['number', {'value': "2"}], 0, 0, [idx]]);
         // Add the pitch blocks to the Note block
         var  notePitch = note.substring(0,note.length-1);  //i.e. D or D# not D#1
         var thisBlock = idx + 2;
